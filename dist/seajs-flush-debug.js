@@ -4,48 +4,51 @@
 (function(seajs) {
 
   var Module = seajs.Module
-  var _load = Module.prototype._load
+  var load = Module.prototype.load
 
   var data = seajs.data
   var cid = 0
   var stack = []
 
 
-  Module.prototype._load = function() {
+  Module.prototype.load = function() {
     stack.push(this)
   }
 
   seajs.flush = function() {
+    var currentStack = stack.splice(0)
     var deps = []
 
     // Collect dependencies
-    for (var i = 0, len = stack.length; i < len; i++) {
-      deps = deps.concat(stack[i].dependencies)
+    for (var i = 0, len = currentStack.length; i < len; i++) {
+      deps = deps.concat(currentStack[i].resolve())
     }
 
     // Create an anonymous module for flushing
     var mod = Module.get(
-        uri || data.cwd + "_flush_" + cid++,
+        data.cwd + "_flush_" + cid++,
         deps
     )
 
-    mod._load = _load
+    mod.load = load
 
-    mod._callback = function() {
-      for (var i = 0, len = stack.length; i < len; i++) {
-        stack[i]._onload()
+    mod.callback = function() {
+      for (var i = 0, len = currentStack.length; i < len; i++) {
+        currentStack[i].onload()
       }
-
-      // Empty stack
-      stack.length = 0
     }
 
     // Load it
-    mod._load()
+    mod.load()
   }
 
-  // Flush on loaded
+  // Flush to load dependencies
   seajs.on("requested", function() {
+    seajs.flush()
+  })
+
+  // Flush to load `require.async` when module.factory is executed
+  seajs.on("exec", function() {
     seajs.flush()
   })
 
