@@ -71,7 +71,7 @@
 
   // Helpers
 
-  var PRELOAD_RE = /\/_preload_\d+/
+  var PRELOAD_RE = /\/_preload_\d+$/
 
   function isPreload(mod) {
     if (PRELOAD_RE.test(mod.uri)) {
@@ -79,7 +79,7 @@
     }
 
     for (var uri in mod._waitings) {
-      if (PRELOAD_RE.test(uri)) {
+      if (isPreload(seajs.cache[uri])) {
         return true
       }
     }
