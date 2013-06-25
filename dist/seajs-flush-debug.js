@@ -11,19 +11,16 @@
 
 
   Module.prototype.load = function() {
+    var mod = this
+
     // DO NOT delay preload modules
-    if (/\/_preload_\d+$/.test(this.uri)) {
-      load.call(this)
-    }
-    else {
-      stack.push(this)
-    }
+    isPreload(mod) ? load.call(mod) : stack.push(mod)
   }
 
-//  seajs.use = function(ids, callback) {
-//    Module.use(ids, callback, data.cwd + "_use_" + data.cid())
-//    return seajs
-//  }
+  seajs.use = function(ids, callback) {
+    Module.use(ids, callback, data.cwd + "_use_" + data.cid())
+    return seajs
+  }
 
   seajs.flush = function() {
     var currentStack = stack.splice(0)
@@ -55,10 +52,11 @@
     }
 
     // Load it
-    //Module.preload(function() {
-    mod.load()
-    //})
+    Module.preload(function() {
+      mod.load()
+    })
   }
+
 
   // Flush to load dependencies
   seajs.on("requested", function() {
@@ -69,6 +67,25 @@
   seajs.on("exec", function() {
     seajs.flush()
   })
+
+
+  // Helpers
+
+  var PRELOAD_RE = /\/_preload_\d+/
+
+  function isPreload(mod) {
+    if (PRELOAD_RE.test(mod.uri)) {
+      return true
+    }
+
+    for (var uri in mod._waitings) {
+      if (PRELOAD_RE.test(uri)) {
+        return true
+      }
+    }
+
+    return false
+  }
 
 
   // Register as module
