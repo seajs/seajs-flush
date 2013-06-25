@@ -12,7 +12,13 @@
 
 
   Module.prototype.load = function() {
-    stack.push(this)
+    // DO NOT delay preload modules
+    if (/\/_preload_\d+$/.test(this.uri)) {
+      load.call(this)
+    }
+    else {
+      stack.push(this)
+    }
   }
 
   seajs.flush = function() {
