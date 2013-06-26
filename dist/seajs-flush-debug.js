@@ -23,13 +23,12 @@
   }
 
   seajs.flush = function() {
-    var currentStack = stack.splice(0)
-
-    var len = currentStack.length
+    var len = stack.length
     if (len === 0) {
       return
     }
 
+    var currentStack = stack.splice(0, len)
     var deps = []
 
     // Collect dependencies
