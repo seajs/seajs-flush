@@ -48,6 +48,8 @@
       for (var i = 0; i < len; i++) {
         currentStack[i].onload()
       }
+      
+      delete this.callback
     }
 
     // Load it
