@@ -46,6 +46,9 @@
     for (var i = 0; i < len; i++) {
       deps = deps.concat(currentStack[i].resolve())
     }
+    
+    // Unique Uris 
+    deps = uniqueUris(deps)
 
     // Create an anonymous module for flushing
     var mod = Module.get(
@@ -97,6 +100,23 @@
     }
 
     return false
+  }
+  
+  function uniqueUris(uris){
+    var ret = []
+    var tmp = {}
+    var uri
+    
+    for(var i = 0; i < uris.length; i++){
+      uri = uris[i]
+
+      if(!tmp[uri]){
+        tmp[uri] = 1
+      	ret.push(uri)
+      }
+    }
+
+    return ret
   }
 
 
