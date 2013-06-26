@@ -8,13 +8,24 @@
 
   var data = seajs.data
   var stack = data.flushStack = []
+  var stacked = data.fulshStacked = {}
 
 
   Module.prototype.load = function() {
     var mod = this
 
     // DO NOT delay preload modules
-    isPreload(mod) ? load.call(mod) : stack.push(mod)
+    if(isPreload(mod)){
+      load.call(mod)
+    }
+    // delay unstacked mod
+    else if(!stacked[mod.uri]){
+      stack.push(mod)
+      stacked[mod.uri] = 1
+    }
+    else {
+      load.call(mod)
+    }
   }
 
   seajs.use = function(ids, callback) {
