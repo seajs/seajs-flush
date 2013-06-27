@@ -8,13 +8,13 @@
 
   var data = seajs.data
   var stack = data.flushStack = []
+  var onRequestedCalling = false
 
 
   Module.prototype.load = function() {
     var mod = this
 
-    // DO NOT delay preload modules
-    if (isPreload(mod)) {
+    if (needFlushImmediately(mod)) {
       load.call(mod)
     }
     else {
@@ -66,6 +66,17 @@
   }
 
 
+  // Add indicator for onRequested method
+  seajs.on("request", function(data) {
+    var onRequested = data.onRequested
+
+    data.onRequested = function() {
+      onRequestedCalling = true
+      onRequested()
+      onRequestedCalling = false
+    }
+  })
+
   // Flush to load dependencies
   seajs.on("requested", function() {
     seajs.flush()
@@ -80,6 +91,14 @@
   // Helpers
 
   var PRELOAD_RE = /\/_preload_\d+$/
+
+  function needFlushImmediately(mod) {
+    return isPreload(mod) || isSavedBefore(mod)
+  }
+
+  function isSavedBefore(mod) {
+    return !onRequestedCalling && mod.status === Module.STATUS.SAVED
+  }
 
   function isPreload(mod) {
     if (PRELOAD_RE.test(mod.uri)) {
