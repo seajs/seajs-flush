@@ -14,7 +14,12 @@
     var mod = this
 
     // DO NOT delay preload modules
-    isPreload(mod) ? load.call(mod) : stack.push(mod)
+    if (isPreload(mod)) {
+      load.call(mod)
+    }
+    else {
+      stack.push(mod)
+    }
   }
 
   seajs.use = function(ids, callback) {
@@ -36,6 +41,9 @@
       deps = deps.concat(currentStack[i].resolve())
     }
 
+    // Remove duplicate uris
+    deps = unique(deps)
+
     // Create an anonymous module for flushing
     var mod = Module.get(
         data.cwd + "_flush_" + data.cid(),
@@ -48,6 +56,7 @@
       for (var i = 0; i < len; i++) {
         currentStack[i].onload()
       }
+      delete mod.callback
     }
 
     // Load it
@@ -84,6 +93,23 @@
     }
 
     return false
+  }
+
+  function unique(uris) {
+    var ret = []
+    var hash = {}
+    var uri
+
+    for (var i = 0, len = uris.length; i < len; i++) {
+      uri = uris[i]
+
+      if (uri && !hash[uri]) {
+        hash[uri] = true
+        ret.push(uri)
+      }
+    }
+
+    return ret
   }
 
 
