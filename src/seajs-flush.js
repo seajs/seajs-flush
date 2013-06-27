@@ -70,16 +70,14 @@
   seajs.on("request", function(data) {
     var onRequest = data.onRequest
 
+    // Flush to load dependencies at onRequest
     data.onRequest = function() {
       isLoadOnRequest = true
       onRequest()
-    }
-  })
+      isLoadOnRequest = false
 
-  // Flush to load dependencies
-  seajs.on("requested", function() {
-    isLoadOnRequest = false
-    seajs.flush()
+      seajs.flush()
+    }
   })
 
   // Flush to load `require.async` when module.factory is executed
