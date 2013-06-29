@@ -19,6 +19,7 @@ Usage
 <script src="path/to/sea.js"></script>
 <script src="path/to/seajs-combo.js"></script>
 <script src="path/to/seajs-flush.js"></script>
+
 <script>
 seajs.use(['a', 'b'], function(a, b) {
   // ...
@@ -32,3 +33,5 @@ seajs.use(['c', 'd'], function(c, d) {
 seajs.flush()
 </script>
 ```
+
+For more details please visit [中文文档](https://github.com/seajs/seajs-flush/issues/7)
