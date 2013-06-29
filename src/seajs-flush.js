@@ -91,7 +91,17 @@
   var PRELOAD_RE = /\/_preload_\d+$/
 
   function needLoadImmediately(mod) {
-    return isPreload(mod) || isSavedBeforeRequest(mod)
+    return hasEmptyDependencies(mod) ||
+        isSavedBeforeRequest(mod) ||
+        isPreload(mod)
+  }
+
+  function isSavedBeforeRequest(mod) {
+    return !isLoadOnRequest && mod.status === Module.STATUS.SAVED
+  }
+
+  function hasEmptyDependencies(mod) {
+    return mod.dependencies.length === 0
   }
 
   function isPreload(mod) {
@@ -106,10 +116,6 @@
     }
 
     return false
-  }
-
-  function isSavedBeforeRequest(mod) {
-    return !isLoadOnRequest && mod.status === Module.STATUS.SAVED
   }
 
   function unique(uris) {
