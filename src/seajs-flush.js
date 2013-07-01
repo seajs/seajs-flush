@@ -130,7 +130,7 @@
       if (uri && !hash[uri]) {
         hash[uri] = true
 
-        // Remove exist uris
+        // Remove exist mod
         if(!seajs.cache[uri]){
           ret.push(uri)
         }
