@@ -1,7 +1,7 @@
 {
   "family": "seajs",
   "name": "seajs-flush",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Sea.js plugin for collecting HTTP requests and sending all at once",
   "keywords": ["seajs", "plugin", "flush"],
   "author": "Frank Wang <lifesinger@gmail.com>",
