@@ -41,8 +41,8 @@
       deps = deps.concat(currentStack[i].resolve())
     }
 
-    // Remove duplicate uris
-    deps = unique(deps)
+    // Remove duplicate and unfetched modules
+    deps = getUnfetchedUris(deps)
 
     // Create an anonymous module for flushing
     var mod = Module.get(
@@ -118,7 +118,7 @@
     return false
   }
 
-  function unique(uris) {
+  function getUnfetchedUris(uris) {
     var ret = []
     var hash = {}
     var uri
@@ -126,9 +126,14 @@
     for (var i = 0, len = uris.length; i < len; i++) {
       uri = uris[i]
 
+      // Remove duplicate uris
       if (uri && !hash[uri]) {
         hash[uri] = true
-        ret.push(uri)
+
+        // Remove existed modules
+        if(!seajs.cache[uri]){
+          ret.push(uri)
+        }
       }
     }
 

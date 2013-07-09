@@ -41,8 +41,8 @@
       deps = deps.concat(currentStack[i].resolve())
     }
 
-    // Normalize deps
-    deps = normalizeUri(deps)
+    // Remove duplicate and unfetched modules
+    deps = getUnfetchedUris(deps)
 
     // Create an anonymous module for flushing
     var mod = Module.get(
@@ -118,7 +118,7 @@
     return false
   }
 
-  function normalizeUri(uris) {
+  function getUnfetchedUris(uris) {
     var ret = []
     var hash = {}
     var uri
@@ -130,7 +130,7 @@
       if (uri && !hash[uri]) {
         hash[uri] = true
 
-        // Remove exist mod
+        // Remove existed modules
         if(!seajs.cache[uri]){
           ret.push(uri)
         }
