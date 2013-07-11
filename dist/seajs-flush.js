@@ -1,1 +1,154 @@
-!function(n){function e(n){return u(n)||t(n)||o(n)}function t(n){return!l&&n.status===c.STATUS.SAVED}function u(n){return 0===n.dependencies.length}function o(e){if(s.test(e.uri))return!0;for(var t in e._waitings)if(o(n.cache[t]))return!0;return!1}function r(e){for(var t,u=[],o={},r=0,c=e.length;c>r;r++)t=e[r],t&&!o[t]&&(o[t]=!0,n.cache[t]||u.push(t));return u}var c=n.Module,a=c.prototype.load,f=n.data,i=f.flushStack=[],l=!1;c.prototype.load=function(){var n=this;e(n)?a.call(n):i.push(n)},n.use=function(e,t){return c.use(e,t,f.cwd+"_use_"+f.cid()),n},n.flush=function(){var n=i.length;if(0!==n){for(var e=i.splice(0,n),t=[],u=0;n>u;u++)t=t.concat(e[u].resolve());t=r(t);var o=c.get(f.cwd+"_flush_"+f.cid(),t);o.load=a,o.callback=function(){for(var t=0;n>t;t++)e[t].onload();delete o.callback},c.preload(function(){o.load()})}},n.on("request",function(e){var t=e.onRequest;e.onRequest=function(){l=!0,t(),l=!1,n.flush()}}),n.on("exec",function(){n.flush()});var s=/\/_preload_\d+$/;define("seajs-flush",[],{})}(seajs);
+/**
+ * The Sea.js plugin for collecting HTTP requests and sending all at once
+ */
+(function(seajs) {
+
+  var Module = seajs.Module
+  var load = Module.prototype.load
+
+  var data = seajs.data
+  var stack = data.flushStack = []
+  var isLoadOnRequest = false
+
+
+  Module.prototype.load = function() {
+    var mod = this
+
+    if (needLoadImmediately(mod)) {
+      load.call(mod)
+    }
+    else {
+      stack.push(mod)
+    }
+  }
+
+  seajs.use = function(ids, callback) {
+    Module.use(ids, callback, data.cwd + "_use_" + data.cid())
+    return seajs
+  }
+
+  seajs.flush = function() {
+    var len = stack.length
+    if (len === 0) {
+      return
+    }
+
+    var currentStack = stack.splice(0, len)
+    var deps = []
+
+    // Collect dependencies
+    for (var i = 0; i < len; i++) {
+      deps = deps.concat(currentStack[i].resolve())
+    }
+
+    // Remove duplicate and unfetched modules
+    deps = getUnfetchedUris(deps)
+
+    // Create an anonymous module for flushing
+    var mod = Module.get(
+        data.cwd + "_flush_" + data.cid(),
+        deps
+    )
+
+    mod.load = load
+
+    mod.callback = function() {
+      for (var i = 0; i < len; i++) {
+        currentStack[i].onload()
+      }
+      delete mod.callback
+    }
+
+    // Load it
+    Module.preload(function() {
+      mod.load()
+    })
+  }
+
+
+  // Add indicator for onRequest method
+  seajs.on("request", function(data) {
+    var onRequest = data.onRequest
+
+    // Flush to load dependencies at onRequest
+    data.onRequest = function() {
+      isLoadOnRequest = true
+      onRequest()
+      isLoadOnRequest = false
+
+      seajs.flush()
+    }
+  })
+
+  // Flush to load `require.async` when module.factory is executed
+  seajs.on("exec", function() {
+    seajs.flush()
+  })
+
+
+  // Helpers
+
+  var PRELOAD_RE = /\/_preload_\d+$/
+  var ASYNC_RE = /\.js_async_\d+$/
+
+  function needLoadImmediately(mod) {
+    return hasEmptyDependencies(mod) ||
+        isSavedBeforeRequest(mod) ||
+        isPreload(mod) ||
+        isAsync(mod)
+  }
+
+  function isSavedBeforeRequest(mod) {
+    return !isLoadOnRequest && mod.status === Module.STATUS.SAVED
+  }
+
+  function hasEmptyDependencies(mod) {
+    return mod.dependencies.length === 0
+  }
+
+  function isPreload(mod) {
+    if (PRELOAD_RE.test(mod.uri)) {
+      return true
+    }
+
+    for (var uri in mod._waitings) {
+      if (isPreload(seajs.cache[uri])) {
+        return true
+      }
+    }
+
+    return false
+  }
+
+  function isAsync(mod) {
+    return ASYNC_RE.test(mod.uri)
+  }
+
+  function getUnfetchedUris(uris) {
+    var ret = []
+    var hash = {}
+    var uri
+
+    for (var i = 0, len = uris.length; i < len; i++) {
+      uri = uris[i]
+
+      // Remove duplicate uris
+      if (uri && !hash[uri]) {
+        hash[uri] = true
+
+        // Remove existed modules
+        if(!seajs.cache[uri]){
+          ret.push(uri)
+        }
+      }
+    }
+
+    return ret
+  }
+
+
+  // Register as module
+  define("seajs-flush", [], {})
+
+})(seajs);
+

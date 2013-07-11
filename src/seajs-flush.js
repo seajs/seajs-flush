@@ -89,11 +89,13 @@
   // Helpers
 
   var PRELOAD_RE = /\/_preload_\d+$/
+  var ASYNC_RE = /\.js_async_\d+$/
 
   function needLoadImmediately(mod) {
     return hasEmptyDependencies(mod) ||
         isSavedBeforeRequest(mod) ||
-        isPreload(mod)
+        isPreload(mod) ||
+        isAsync(mod)
   }
 
   function isSavedBeforeRequest(mod) {
@@ -116,6 +118,10 @@
     }
 
     return false
+  }
+
+  function isAsync(mod) {
+    return ASYNC_RE.test(mod.uri)
   }
 
   function getUnfetchedUris(uris) {
