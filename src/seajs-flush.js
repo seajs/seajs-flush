@@ -5,10 +5,11 @@
 
   var Module = seajs.Module
   var load = Module.prototype.load
-
   var data = seajs.data
-  var stack = data.flushStack = []
-  var depStack = []
+
+  var useStack = data.flushUseStack = []
+  var depStack = data.flushDepStack = []
+
   var isLoadOnRequest = false
   var isInUse = false
 
@@ -20,7 +21,7 @@
       load.call(mod)
     }
     else {
-      isInUse ? stack.push(mod) : depStack.push(mod)
+      isInUse ? useStack.push(mod) : depStack.push(mod)
     }
   }
 
@@ -28,14 +29,15 @@
     isInUse = true
     Module.use(ids, callback, data.cwd + "_use_" + data.cid())
     isInUse = false
+
     return seajs
   }
 
   seajs.flush = function() {
-    flushStacks(stack)
+    flush(useStack)
   }
 
-  function flushStacks(stack) {
+  function flush(stack) {
     var len = stack.length
     if (len === 0) {
       return
@@ -73,8 +75,6 @@
     })
   }
 
-
-  // Add indicator for onRequest method
   seajs.on("request", function(data) {
     var onRequest = data.onRequest
 
@@ -84,13 +84,8 @@
       onRequest()
       isLoadOnRequest = false
 
-      flushStacks(depStack)
+      flush(depStack)
     }
-  })
-
-  // Flush to load `require.async` when module.factory is executed
-  seajs.on("exec", function() {
-    flushStacks(depStack)
   })
 
 
