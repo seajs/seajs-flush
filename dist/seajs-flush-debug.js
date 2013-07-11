@@ -5,10 +5,13 @@
 
   var Module = seajs.Module
   var load = Module.prototype.load
-
   var data = seajs.data
-  var stack = data.flushStack = []
+
+  var useStack = data.flushUseStack = []
+  var depStack = data.flushDepStack = []
+
   var isLoadOnRequest = false
+  var isInUse = false
 
 
   Module.prototype.load = function() {
@@ -18,16 +21,23 @@
       load.call(mod)
     }
     else {
-      stack.push(mod)
+      isInUse ? useStack.push(mod) : depStack.push(mod)
     }
   }
 
   seajs.use = function(ids, callback) {
+    isInUse = true
     Module.use(ids, callback, data.cwd + "_use_" + data.cid())
+    isInUse = false
+
     return seajs
   }
 
   seajs.flush = function() {
+    flush(useStack)
+  }
+
+  function flush(stack) {
     var len = stack.length
     if (len === 0) {
       return
@@ -41,7 +51,7 @@
       deps = deps.concat(currentStack[i].resolve())
     }
 
-    // Remove duplicate and unfetched modules
+    // Remove duplicate and saved modules
     deps = getUnfetchedUris(deps)
 
     // Create an anonymous module for flushing
@@ -65,8 +75,6 @@
     })
   }
 
-
-  // Add indicator for onRequest method
   seajs.on("request", function(data) {
     var onRequest = data.onRequest
 
@@ -76,13 +84,8 @@
       onRequest()
       isLoadOnRequest = false
 
-      seajs.flush()
+      flush(depStack)
     }
-  })
-
-  // Flush to load `require.async` when module.factory is executed
-  seajs.on("exec", function() {
-    seajs.flush()
   })
 
 
@@ -136,8 +139,8 @@
       if (uri && !hash[uri]) {
         hash[uri] = true
 
-        // Remove existed modules
-        if(!seajs.cache[uri]){
+        // Remove saved modules
+        if(!seajs.cache[uri] || seajs.cache[uri].status < Module.STATUS.SAVED){
           ret.push(uri)
         }
       }
