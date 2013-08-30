@@ -1,13 +1,14 @@
 
 build:
-	@rm -rf dist
-	@mkdir dist
-	@sed "s/seajs-flush/seajs-flush-debug/" src/seajs-flush.js >dist/seajs-flush-debug.js
-	@uglifyjs src/seajs-flush.js -o dist/seajs-flush.js -mc
-	@make size
+	@seatools build
 
 test:
-	@make test -C ../seajs
+	@seatools site
+	@seatools test --local
+	@seatools test --http
+
+totoro:
+	@seatools test --totoro
 
 size:
-	@../seajs/tools/size.sh seajs-flush
+	@seatools size
