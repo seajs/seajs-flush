@@ -1,7 +1,7 @@
 /**
  * The Sea.js plugin for collecting HTTP requests and sending all at once
  */
-(function(seajs) {
+define(function() {
 
   var Module = seajs.Module
   var load = Module.prototype.load
@@ -149,9 +149,4 @@
     return ret
   }
 
-
-  // Register as module
-  define("seajs-flush", [], {})
-
-})(seajs);
-
+});
