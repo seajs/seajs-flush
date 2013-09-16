@@ -108,4 +108,4 @@ define("seajs/seajs-flush/1.0.1/seajs-flush-debug", [], function() {
     }
 });
 
-seajs.use("seajs/seajs-flush/1.0.1/seajs-flush-debug");
+seajs.require("seajs/seajs-flush/1.0.1/seajs-flush-debug");
