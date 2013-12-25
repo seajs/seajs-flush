@@ -12,7 +12,9 @@
   "devDependencies": {
     "seatools": "*"
   },
-  "spm": {
-    "output": ["seajs-flush.js"]
+  "config": {
+    "plugin-concat": [
+      "seajs-flush.js"
+    ]
   }
 }
