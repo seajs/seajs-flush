@@ -4,10 +4,6 @@ seajs-flush
 A Sea.js plugin for collecting HTTP requests and sending all at once
 
 
-> seajs-flush@1.0.1+ is compatible with seajs@2.2.0+ !
-
-
-
 Install
 -------
 
