@@ -20,10 +20,11 @@
   seajs.use('../test', function(test) {
 
     // seajs/seajs-flush#1
-    seajs.config({
-      preload: ['p']
-    })
+//    seajs.config({
+//      preload: ['p']
+//    })
 
+    seajs.use('p').flush()
 
     // Simple example
     seajs.use('a', function(a) {
