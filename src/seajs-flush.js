@@ -69,9 +69,7 @@ function flush(stack) {
   }
 
   // Load it
-//  Module.preload(function() {
     mod.load()
-//  })
 }
 
 seajs.on("request", function(data) {
@@ -90,7 +88,6 @@ seajs.on("request", function(data) {
 
 // Helpers
 
-//var PRELOAD_RE = /\/_preload_\d+$/
 var ASYNC_RE = /\.js_async_\d+$/
 
 function needLoadImmediately(mod) {
@@ -107,20 +104,6 @@ function isSavedBeforeRequest(mod) {
 function hasEmptyDependencies(mod) {
   return mod.dependencies.length === 0
 }
-
-//function isPreload(mod) {
-//  if (PRELOAD_RE.test(mod.uri)) {
-//    return true
-//  }
-//
-//  for (var uri in mod._waitings) {
-//    if (isPreload(seajs.cache[uri])) {
-//      return true
-//    }
-//  }
-//
-//  return false
-//}
 
 function isAsync(mod) {
   return ASYNC_RE.test(mod.uri)
