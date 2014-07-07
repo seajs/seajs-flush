@@ -139,5 +139,5 @@ function getUnfetchedUris(uris) {
   return ret
 }
 
-define("seajs/seajs-flush/1.0.1/seajs-flush-debug", [], {});
+define("seajs/seajs-flush/1.1.0/seajs-flush-debug", [], {});
 })();
