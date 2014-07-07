@@ -62,11 +62,18 @@ function flush(stack) {
 
   mod.load = load
 
+  mod._entry.push(mod)
+  mod.history = {}
+  mod.remain = 1
+
   mod.callback = function() {
     for (var i = 0; i < len; i++) {
       currentStack[i].onload()
     }
     delete mod.callback
+    delete mod.history
+    delete mod.remain
+    delete mod._entry
   }
 
   // Load it
